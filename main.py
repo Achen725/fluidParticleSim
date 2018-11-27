@@ -8,11 +8,236 @@ import random
 import copy
 import math
 
+
+class Obstacle(object):
+	def __init__(self):
+		self.property = "ground"
+
+class Ramp(Obstacle):
+	def __init__(self):
+		super().__init__()
+	def draw(self, dim):
+		glBegin(GL_LINES)
+		glEnd()
+		glFlush()
+
+class Cube(Obstacle):
+	def __init__(self):
+		super().__init__()
+		self.density = 10
+	#
+	# def draw(self, mySystem):
+	# 	mySystem.solidCube(mySystem.)
+
+
+class System(object):
+	def __init__(self):
+		self.getTicksLastFrame = 0
+		self.totalParticles = self.makeParticles(10000)
+		self.velocities = []*125000
+		self.dim = 0.5
+		self.floor = -0.5
+		self.gridVelocities = []
+
+	def grid(self):
+		lines = []
+		glBegin(GL_LINES)
+		glColor3f(1,0,0)
+		for i in range(1,50):
+			w = -0.5+0.02*i
+			for j in range(1, 50):
+				h = -0.5+0.02*j
+				glVertex3fv((w, h, 0.5))
+				glVertex3fv((w, h, -0.5))
+				glVertex3fv((w, 0.5, h))
+				glVertex3fv((w, -0.5, h))
+				glVertex3fv((0.5, w, h))
+				glVertex3fv((-0.5, w, h))
+		glEnd()
+		glFlush()
+
+	def solidCube(self, dim):
+		sides = [(0,1),(0,3),(0,5),(2,1),(2,3),(2,7),
+				(6,1),(6,5),(6,7),(4,5),(4,7),(4,3)]
+
+		vertex = [(-dim,dim,dim),(dim,dim,dim),(dim,dim,-dim),(-dim,dim,-dim),(-dim,-dim,-dim),
+				(-dim,-dim,dim),(dim,-dim,dim),(dim,-dim,-dim)]
+		glBegin(GL_LINES)
+		glColor3f(1,1,1)
+		for side in sides:
+			for point in side:
+				glVertex3fv(vertex[point])
+		glEnd()
+		glFlush()
+
+	def checkCollision(self, x, y, z):
+		return len(self.gridVelocities[convertToIJK(x,y,z)]) > 5
+
+	def move(self, t):
+		# take each particle in grid and assign to matrix
+		gridVelocities =  [[] for i in range(125000)]
+		for particle in self.totalParticles:
+			index = convertToIJK(particle.x, particle.y, particle.z)
+			# print(index)
+			gridVelocities[index].append(particle.velocity)
+
+		self.gridVelocities = gridVelocities
+		# interpolate velocities of each grid
+		# newVelocities = recalulateVelocity(gridVelocities)
+		# add grid velocity to each particle
+		# avg with total grid velocity
+		for particle in self.totalParticles:
+			# index = convertToIJK(particle.x, particle.y, particle.z)
+			# velocity = (particle.velocity[0] + particle.acceleration[0], particle.velocity[1] + particle.acceleration[1], particle.velocity[2] + particle.acceleration[2])
+			# velocityPic = (velocity[0] - newVelocities[index][0], velocity[1] - newVelocities[index][1], velocity[2] - newVelocities[index][2])
+			# x = sum([pair[0] for pair in [velocityPic,newVelocities[index]]])
+			# y = sum([pair[1] for pair in [velocityPic,newVelocities[index]]])
+			# z = sum([pair[2] for pair in [velocityPic,newVelocities[index]]])
+			# avg = (x/2,y/2,z/2)
+			# # particle.updateVelocity(avg[0],avg[1],avg[2])
+			particle.movePart(self.dim, self, t)
+
+	def makeParticles(self,num):
+		lst = []
+		for i in range(num):
+			randX = round(random.uniform(-0.2, 0.2),2)
+			randZ = round(random.uniform(-0.2, 0.2),2)
+			#randX = round(random.uniform(-0.5,0.5),2)
+			#randZ = round(random.uniform(-0.5, 0.5),2)
+			randY = round(random.uniform(0, 0.5), 2)
+			lst.append(Particle(randX, randY, randZ))
+		return lst
+
+	def particleAtPos(self, y):
+		for particle in self.totalParticles:
+			if particle.y == y:
+				return True
+		return False
+
+
+class Particle(object):
+
+	def __init__(self,x,y,z):
+		self.x = x
+		self.y = y
+		self.z = z
+		self.prop = (self.x,self.y,self.z)
+		self.speed = 1
+		self.mass = 0.05
+		self.velocity = (0, 0, 0)
+		self.acceleration = (0, -9.8, 0)
+		self.appliedForce = False
+		self.collided = 0
+		self.stopDrop = False
+
+	def __repr__(self):
+		return "Particle (" + str(self.x) + "," + str(self.y) + str(self.z) + ")"
+
+	def movePart(self,dim, system, t = 0):
+
+		dx = (self.velocity[0] * self.speed)
+		dy = (-0.05 * self.speed)
+		dz = (self.velocity[2] * self.speed)
+
+		xBound = -dim <= self.x + dx <= dim
+		yBound =  -dim <= self.y + dy <= dim
+		zBound = -dim <= self.z + dz <= dim
+
+		if not xBound or not yBound or not zBound:
+			velocity = self.velocity
+			# if(self.x + dx < -dim):
+			# 	self.velocity = (random.uniform(-2, 2),velocity[1], velocity[2])
+			# elif(self.x + dx > dim):
+			# 	self.velocity = (random.uniform(-2, 2),velocity[1], velocity[2])
+			if(self.y + dy < system.floor):
+				# self.y = -dim;
+				#check for collision
+				if(system.checkCollision(self.x, self.y, self.z)):
+					self.collided+=1
+					if(self.collided > 100):
+						self.y += 0.05
+						self.floor+= 0.1
+						self.collided = 0
+						self.stopDrop = True
+					else:
+						self.x += (random.uniform(-0.06, 0.06)*self.speed)
+						self.z += (random.uniform(-.06, .06)*self.speed)
+				if(self.x>=0.5):
+					self.x = 0.5
+				elif(self.x<=-0.5):
+					self.x = -0.5
+				if(self.z>=0.5):
+					self.z=0.5
+				elif(self.z<=-0.5):
+					self.z = -0.5
+				if(self.y>=0.5):
+					self.y= 0.5
+				elif(self.y<=-0.5):
+					self.y = system.floor
+
+				# self.velocity = (random.uniform(-5, 5),0, random.uniform(-5, 5))
+				# self.acceleration = (self.acceleration[0], min(self.acceleration[1] + random.uniform(0,t*3),0), self.acceleration[2])
+			# elif (self.y + dy > dim):
+			# 	self.velocity = (velocity[0]+random.uniform(-50, 50),random.uniform(-10, 30), velocity[2]+random.uniform(-50, 50))
+			# if(self.z + dz < -dim) :
+			# 	self.velocity = (velocity[0], velocity[1],random.uniform(-2, 2))
+			# elif(self.z + dz > dim) :
+			# 	self.velocity = (velocity[0], velocity[1],random.uniform(-2, 2))
+		else:
+			if(not self.stopDrop):
+				self.y-=(0.05*self.speed)
+				if(self.y<=-0.5):
+					self.y= self.floor
+			else:
+				if(system.checkCollision(self.x, self.y, self.z)):
+					self.collided+=1
+					if(self.collided > 100):
+						self.y += 0.05
+						self.collided = 0
+						self.stopDrop = True
+					else:
+						self.x += (random.uniform(-0.06, 0.06)*self.speed)
+						self.z += (random.uniform(-.06, .06)*self.speed)
+				if(self.x>=0.5):
+					self.x = 0.5
+				elif(self.x<=-0.5):
+					self.x = -0.5
+				if(self.z>=0.5):
+					self.z=0.5
+				elif(self.z<=-0.5):
+					self.z = -0.5
+				if(self.y>=0.5):
+					self.y=0.5
+				elif(self.y<=-0.5):
+					self.y = -0.5
+
+			# velocity = self.velocity
+			# if self.appliedForce:
+			# 	self.velocity = (velocity[0] + random.uniform(0, 10),random.uniform(0, 10), velocity[2])
+			# self.x += (velocity[0] * self.speed)
+			# self.y += (velocity[1] * self.speed)
+			# self.z += (velocity[2] * self.speed)
+
+	def updateVelocity(self, dx, dy, dz):
+		self.velocity = (dx, dy, dz)
+
+	def drawParticle(self):
+		glPointSize(5.0)
+		glBegin(GL_POINTS)
+		glVertex3f(self.x, self.y, self.z)
+		glColor3f(0,0.5,1)
+		glEnd()
+
+def drawParticles(totalParticles):
+	for particle in totalParticles:
+		particle.drawParticle()
+
+# convert x,y,z coordinate system to i,j,k so we can find the index of particle
 def convertToIJK(x, y, z):
-	i = (int((x + 0.5) * 10)) % 2
-	j = (int((y + 0.5) * 10)) % 2
-	k = (int((z + 0.5) * 10)) % 2
-	return int((i * 5 + j) + (z * 25))
+	i = (int((x + 0.5) * 99)) // 2
+	j = (int((y + 0.5) * 99)) // 2
+	k = (int((z + 0.5) * 99)) // 2
+	return int((i * 50 + j) + (k * 2500))
 
 def recalulateVelocity(velocities):
 	newVelocities = []
@@ -24,155 +249,19 @@ def recalulateVelocity(velocities):
 		if(len(v) == 0):
 			newVelocities.append((0,0,0))
 		else:
+			# average velocity
 			newVelocities.append((x/len(v), y/len(v), z/len(v)))
 	return newVelocities
 
-class System(object):
-	def __init__(self):
-		self.name = random.random()
-		self.getTicksLastFrame = 0
-		self.movementX = 0.3
-		self.movementZ = 0.3
-		self.totalParticles = self.makeParticles(10000)
-		self.velocities = []*125
-
-	def solidCube(self):
-		sides = [(0,1),(0,3),(0,5),(2,1),(2,3),(2,7),
-				(6,1),(6,5),(6,7),(4,5),(4,7),(4,3)]
-
-		vertex = [(-0.5,0.5,0.5),(0.5,0.5,0.5),(0.5,0.5,-0.5),(-0.5,0.5,-0.5),(-0.5,-0.5,-0.5),
-				(-0.5,-0.5,0.5),(0.5,-0.5,0.5),(0.5,-0.5,-0.5)]
-
-		glBegin(GL_LINES)
-		glColor3f(1,1,1)
-		for side in sides:
-			for point in side:
-				glVertex3fv(vertex[point])
-		glEnd()
-		glFlush()
-
-	def move(self):
-		# take each particle in grid and assign to matrix
-		gridVelocities =  [ [] for i in range(125) ]
-		for particle in self.totalParticles:
-			index = convertToIJK(particle.x, particle.y, particle.z)
-			gridVelocities[index].append(particle.velocity)
-		# interpolate velocities of each grid
-		newVelocities = recalulateVelocity(gridVelocities)
-
-		# add grid velocity to each particle
-		# avg with total grid velocity
-		for particle in self.totalParticles:
-			index = convertToIJK(particle.x, particle.y, particle.z)
-
-			velocity = (particle.velocity[0] + particle.acceleration[0], particle.velocity[1] + particle.acceleration[1], particle.velocity[2] + particle.acceleration[2])
-
-			velocityPic = (velocity[0] - newVelocities[index][0], velocity[1] - newVelocities[index][1], velocity[2] - newVelocities[index][2])
-
-			x = sum([pair[0] for pair in [velocity,newVelocities[index]]])
-			y = sum([pair[1] for pair in [velocity,newVelocities[index]]])
-			z = sum([pair[2] for pair in [velocity,newVelocities[index]]])
-
-			avg = (x/2,y/2,z/2)
-			particle.updateVelocity(avg[0],avg[1],avg[2])
-			particle.movePart(1,2,3)
-
-	def makeParticles(self,num):
-		lst = []
-		for i in range(num):
-			randX = round(random.uniform(-0.2, 0.2),2)
-			#randX = round(random.uniform(-1, 1),2)
-			#randZ = round(random.uniform(-1, 1),2)
-			randY = round(random.uniform(0, 0.5), 2)
-			randZ = round(random.uniform(-0.2, 0.2),2)
-			lst.append(Particle(randX, randY, randZ))
-		return lst
-
-class Particle(object):
-
-	def __init__(self,x,y,z):
-		self.x = x
-		self.y = y
-		self.z = z
-		self.prop = (self.x,self.y,self.z)
-		initialSpeed = 0.4
-		self.speed = 0.0002
-		self.velocity = (0, 0, 0)
-		self.acceleration = (0, -9.8, 0)
-
-	def __repr__(self):
-		return "Particle (" + str(self.x) + "," + str(self.y) + str(self.z) + ")"
-
-	def movePart(self,dx, dy, dz):
-		dx = (self.velocity[0] * self.speed)
-		dy = (self.velocity[1] * self.speed)
-		dz = (self.velocity[2] * self.speed)
-
-		xBound = -0.5 <= self.x + dx <= 0.5
-		yBound = -0.5 <= self.y + dy <= 0.5
-		zBound = -0.5 <= self.z + dz <= 0.5
-
-		if not xBound or not yBound or not zBound:
-			velocity = self.velocity
-			if(self.x + dx < -0.5):
-				self.velocity = (random.uniform(-100, 100),velocity[1], velocity[2])
-			elif(self.x + dx > 0.5):
-				self.velocity = (random.uniform(-100, 100),velocity[1], velocity[2])
-			if(self.y + dy < -0.5):
-				self.velocity = (velocity[0]+random.uniform(-500, 500),random.uniform(0, 500), velocity[2]+random.uniform(-500, 500))
-			elif(self.y + dy > 0.5):
-				self.velocity = (velocity[0]+random.uniform(-500, 500),random.uniform(-500, 0), velocity[2]+random.uniform(-500, 500))
-			if(self.z + dz < -0.5):
-				self.velocity = (velocity[0], velocity[1],random.uniform(-100, 100))
-			elif(self.z + dz > 0.5):
-				self.velocity = (velocity[0], velocity[1],random.uniform(-100, 100))
-		else:
-			velocity = self.velocity
-			self.x += (velocity[0] * self.speed)
-			self.y += (velocity[1] * self.speed)
-			self.z += (velocity[2] * self.speed)
-
-	def updateVelocity(self, dx, dy, dz):
-		self.velocity = (dx, dy, dz)
-
-	def collides(self, totalParticles):
-		if self in totalParticles:
-			return True
-		if  -0.5 > self.x > 0.5:
-			return True
-		if  -0.5 > self.y > 0.5:
-			return True
-		if  -0.5 > self.z > 0.5:
-			return True
-		return False
-
-	def drawParticle(self):
-		glPointSize(5.0)
-		glBegin(GL_POINTS)
-		glVertex3f(self.x, self.y, self.z)
-		glColor3f(0,0.5,1)
-		# glPointSize(2.0)
-		glEnd()
-
-	def fillSpace(self):
-		pass
-
-def drawParticles(totalParticles):
-	for particle in totalParticles:
-		particle.drawParticle()
-
-def checkFilled(x,y,z, totalParticles):
-	for xPoint in range(-100,100,10):
-		for zPoint in range(-100,100,10):
-			if (round(xPoint/100), y, round(zPoint/100)) not in totalParticles:
-				return False
-	return True
+def normalize(mouseX, mouseY):
+	x = (mouseX) / 1000 - 0.5
+ 	y = 0.5 - (mouseY) / 1000
+ 	z = 0.5
+	return np.array([x, y, z])
 
 def update(deltaTime, mySystem):
 	totalParticles = mySystem.totalParticles
-	xMove = mySystem.movementX
-	zMove = mySystem.movementZ
-	mySystem.move()
+	mySystem.move(deltaTime)
 
 def mainLoop(simulation):
 	pygame.init()
@@ -180,7 +269,7 @@ def mainLoop(simulation):
 	display = (1000,1000)
 	screen = pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
 	# camera
-	gluPerspective(45, (display[0]/display[1]), 0.1, 50.0)
+	camera = gluPerspective(45, (display[0]/display[1]), 0.1, 20.0)
 	glTranslatef(0.0,0.0, -5)
 
 	while True:
@@ -197,6 +286,30 @@ def mainLoop(simulation):
 					glRotatef(6,1,0,0)
 				elif event.key == pygame.K_DOWN:
 					glRotatef(6,-1,0,0)
+			# elif event.type == pygame.MOUSEMOTION:
+		 	# 	mouseX, mouseY = pygame.mouse.get_pos()
+			# 	x = (2 * mouseX) / 1000 - 1
+			#  	y = 1 - (2 * mouseY) / 1000
+			#  	z = 1
+			# 	ray = normalize(x,y)
+			# 	rayClip = np.array([ray[0], ray[1], -1, 1])
+			# 	eye = np.linalg.inv(glGetFloatv(GL_PROJECTION_MATRIX))*rayClip
+			# 	eye = np.array([eye[0],eye[1], -1, 0])
+			# 	temp = np.linalg.inv(glGetFloatv(GL_MODELVIEW_MATRIX)) * eye
+			# 	wor = np.array([temp[0], temp[1], temp[2]])
+			# 	wor =  np.linalg.norm(wor)
+			# 	print(wor)
+				#for particle in simulation.totalParticles:
+
+				# if (display[0]/2 - 100 < x < display[0]/2 + 100 and
+				# 	display[0]/2 - 100 < y < display[0]/2 + 100): \
+				# coordX = (int((x + display[0]/2)) % 2)
+				# coordY = (int((y + display[1]/2)) % 2)
+				# for particle in simulation.totalParticles:
+				# 	i = (int((particle.x + 0.5) * 10)) % 2
+				# 	j = (int((particle.y + 0.5) * 10)) % 2
+				# 	if (i,j) == (coordX,coordY):
+
 
 		# timer to keep continuous movement
 		t = pygame.time.get_ticks()
@@ -207,11 +320,11 @@ def mainLoop(simulation):
 		# clear current frame
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
 		# redraw your cube
-		simulation.solidCube()
+		simulation.solidCube(simulation.dim)
+		# simulation.grid()
 		drawParticles(simulation.totalParticles)
-
 		# size manipulation of particles
-		glPointSize(20)
+		# glPointSize(1)
 		#update the frame
 		pygame.display.flip()
 
