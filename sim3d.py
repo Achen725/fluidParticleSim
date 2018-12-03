@@ -7,6 +7,7 @@ import pygame
 import random
 import copy
 import math
+import launch
 
 
 class Obstacle(object):
@@ -25,10 +26,6 @@ class Cube(Obstacle):
 	def __init__(self):
 		super().__init__()
 		self.density = 10
-	#
-	# def draw(self, mySystem):
-	# 	mySystem.solidCube(mySystem.)
-
 
 class System(object):
 	def __init__(self):
@@ -56,11 +53,14 @@ class System(object):
 		glEnd()
 		glFlush()
 
+	# cube template adapted from tutorial
+	#https://pythonprogramming.net/opengl-rotating-cube-example-pyopengl-tutorial/
 	def solidCube(self, dim):
 		sides = [(0,1),(0,3),(0,5),(2,1),(2,3),(2,7),
 				(6,1),(6,5),(6,7),(4,5),(4,7),(4,3)]
 
-		vertex = [(-dim,dim,dim),(dim,dim,dim),(dim,dim,-dim),(-dim,dim,-dim),(-dim,-dim,-dim),
+		vertex = [(-dim,dim,dim),(dim,dim,dim),(dim,dim,-dim),(-dim,dim,-dim),
+				(-dim,-dim,-dim),
 				(-dim,-dim,dim),(dim,-dim,dim),(dim,-dim,-dim)]
 		glBegin(GL_LINES)
 		glColor3f(1,1,1)
@@ -73,6 +73,9 @@ class System(object):
 	def checkCollision(self, x, y, z):
 		return len(self.gridVelocities[convertToIJK(x,y,z)]) > 5
 
+
+	# method for calculating movement adapted from Austin Eng documentation
+	# https://github.com/austinEng/WebGL-PIC-FLIP-Fluid
 	def move(self, t):
 		# take each particle in grid and assign to matrix
 		gridVelocities =  [[] for i in range(125000)]
@@ -264,6 +267,9 @@ def update(deltaTime, mySystem):
 	mySystem.move(deltaTime)
 
 def mainLoop(simulation):
+	# camera and pygame adapted from pyopengl documentation and previous tutorial
+	#http://pyopengl.sourceforge.net
+	#https://pythonprogramming.net/opengl-rotating-cube-example-pyopengl-tutorial/
 	pygame.init()
 	# window size
 	display = (1000,1000)
@@ -276,6 +282,7 @@ def mainLoop(simulation):
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
+				launch.run()
 				quit()
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_LEFT:
@@ -286,30 +293,6 @@ def mainLoop(simulation):
 					glRotatef(6,1,0,0)
 				elif event.key == pygame.K_DOWN:
 					glRotatef(6,-1,0,0)
-			# elif event.type == pygame.MOUSEMOTION:
-		 	# 	mouseX, mouseY = pygame.mouse.get_pos()
-			# 	x = (2 * mouseX) / 1000 - 1
-			#  	y = 1 - (2 * mouseY) / 1000
-			#  	z = 1
-			# 	ray = normalize(x,y)
-			# 	rayClip = np.array([ray[0], ray[1], -1, 1])
-			# 	eye = np.linalg.inv(glGetFloatv(GL_PROJECTION_MATRIX))*rayClip
-			# 	eye = np.array([eye[0],eye[1], -1, 0])
-			# 	temp = np.linalg.inv(glGetFloatv(GL_MODELVIEW_MATRIX)) * eye
-			# 	wor = np.array([temp[0], temp[1], temp[2]])
-			# 	wor =  np.linalg.norm(wor)
-			# 	print(wor)
-				#for particle in simulation.totalParticles:
-
-				# if (display[0]/2 - 100 < x < display[0]/2 + 100 and
-				# 	display[0]/2 - 100 < y < display[0]/2 + 100): \
-				# coordX = (int((x + display[0]/2)) % 2)
-				# coordY = (int((y + display[1]/2)) % 2)
-				# for particle in simulation.totalParticles:
-				# 	i = (int((particle.x + 0.5) * 10)) % 2
-				# 	j = (int((particle.y + 0.5) * 10)) % 2
-				# 	if (i,j) == (coordX,coordY):
-
 
 		# timer to keep continuous movement
 		t = pygame.time.get_ticks()
@@ -331,5 +314,5 @@ def mainLoop(simulation):
 def main():
 	simulation = System()
 	mainLoop(simulation)
-if __name__== "__main__":
-	main()
+# if __name__== "__main__":
+# 	main()
