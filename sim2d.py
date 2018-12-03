@@ -7,6 +7,7 @@ import random
 import copy
 import math
 import launch
+import game
 
 # water movement inspired by http://usingpython.com/pygame-images/
 # and terraria movement of water https://www.youtube.com/watch?v=ZXPdI0WIvw0
@@ -17,6 +18,7 @@ class System(object):
         self.wall = []
         self.display = (600,600)
         self.paused = True
+        self.mode = "normal"
         self.floorLevel = self.display[0]
         self.placing = "water"
         self.blockPic = pygame.image.load("ground.png")
@@ -157,7 +159,6 @@ def update(sim,display):
                                 p.pos.move(5,-5).collidelist(waterRect) >= 0:
                                 p.direction = True
                             p.pos = p.pos.move(5,0)
-
             else:
                 if p.direction:
                     p.pos = p.pos.move(5,0)
@@ -218,6 +219,11 @@ def mainLoop():
                     sim.paused = not sim.paused
                 if event.key == pygame.K_r:
                     sim.newBoard()
+                if event.key == pygame.K_SPACE:
+                    pygame.quit()
+                    game.mainLoop(sim.particles,sim.wall)
+                    quit()
+
             elif event.type == pygame.MOUSEMOTION and sim.placing == "force":
                 mousePos = pygame.mouse.get_pos()
                 pushParticles(mousePos,sim)

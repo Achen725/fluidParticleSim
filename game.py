@@ -62,7 +62,7 @@ def render(screen,sim):
         myFont = pygame.font.SysFont(None, 20)
         # text for number of water blocks
         text1 = myFont.render('Water Blocks: ' + \
-            str(len(sim.particles)-1),True, (0, 0, 0), (255, 255, 255))
+            str(len(sim.particles)),True, (0, 0, 0), (255, 255, 255))
         waterText = text1.get_rect()
         waterText.left = 0
         waterText.centery = 20
@@ -96,65 +96,61 @@ def update(sim,display):
     if not sim.paused:
         waterRect = getWaterRect(sim.particles)
         for p in sim.particles:
-            if p.pos[1] > display[0]:
+            if p.pos[1] >= display[0]:
                 sim.particles.remove(p)
-            if not p.floor:
-                p.pos = p.pos.move(0,5)
-                if p.pos[1] == sim.floorLevel-5 and \
-                    p.pos.collidelist(waterRect) < 0:
-                    p.floor = True
-                elif p.pos.collidelist(sim.wall) < 0 and \
-                    p.pos.collidelist(waterRect) < 0:
-                    pass
-                else:
-                    p.pos = p.pos.move(0,-5)
-                    if p.direction:
-                        p.pos = p.pos.move(5,0)
-                        if p.pos.collidelist(waterRect) < 0 and \
-                            p.pos.collidelist(sim.wall) < 0 and \
-                            p.pos[0] < display[0]:
-                            pass
-                        else:
-                            # if p.pos.collidelist(waterRect) >= 0 and \
-                            #     p.pos.move(-5,-5).collidelist(waterRect) >= 0:
-                            p.direction = not p.direction
-                            p.pos = p.pos.move(-5,0)
-
-                    else:
-                        p.pos = p.pos.move(-5,0)
-                        if p.pos.collidelist(sim.wall) < 0 and \
-                            p.pos.collidelist(waterRect) < 0 and p.pos[0] > -5:
-                            pass
-                        else:
-                            # if p.pos.collidelist(waterRect) >= 0 and \
-                            #     p.pos.move(5,-5).collidelist(waterRect) >= 0:
-                            p.direction = not p.direction
-                            p.pos = p.pos.move(5,0)
-
+            p.pos = p.pos.move(0,5)
+            if p.pos.collidelist(sim.wall) < 0 and \
+                p.pos.collidelist(waterRect) < 0:
+                pass
             else:
+                p.pos = p.pos.move(0,-5)
                 if p.direction:
                     p.pos = p.pos.move(5,0)
-                    if p.pos.collidelist(sim.wall) < 0 and \
-                        p.pos.collidelist(waterRect) < 0 and \
+                    if p.pos.collidelist(waterRect) < 0 and \
+                        p.pos.collidelist(sim.wall) < 0 and \
                         p.pos[0] < display[0]:
                         pass
                     else:
                         # if p.pos.collidelist(waterRect) >= 0 and \
-                        #     p.pos.move(-5,-5).collidelist(waterRect) >= 0 :
-                        p.direction =  not p.direction
+                        #     p.pos.move(-5,-5).collidelist(waterRect) >= 0:
+                        p.direction = not p.direction
                         p.pos = p.pos.move(-5,0)
 
                 else:
                     p.pos = p.pos.move(-5,0)
                     if p.pos.collidelist(sim.wall) < 0 and \
-                        p.pos.collidelist(waterRect) < 0 and \
-                        p.pos[0] > -5:
+                        p.pos.collidelist(waterRect) < 0 and p.pos[0] > -5:
                         pass
                     else:
                         # if p.pos.collidelist(waterRect) >= 0 and \
                         #     p.pos.move(5,-5).collidelist(waterRect) >= 0:
-                        p.direction =  not p.direction
+                        p.direction = not p.direction
                         p.pos = p.pos.move(5,0)
+
+            # else:
+            #     if p.direction:
+            #         p.pos = p.pos.move(5,0)
+            #         if p.pos.collidelist(sim.wall) < 0 and \
+            #             p.pos.collidelist(waterRect) < 0 and \
+            #             p.pos[0] < display[0]:
+            #             pass
+            #         else:
+            #             # if p.pos.collidelist(waterRect) >= 0 and \
+            #             #     p.pos.move(-5,-5).collidelist(waterRect) >= 0 :
+            #             p.direction =  not p.direction
+            #             p.pos = p.pos.move(-5,0)
+            #
+            #     else:
+            #         p.pos = p.pos.move(-5,0)
+            #         if p.pos.collidelist(sim.wall) < 0 and \
+            #             p.pos.collidelist(waterRect) < 0 and \
+            #             p.pos[0] > -5:
+            #             pass
+            #         else:
+            #             # if p.pos.collidelist(waterRect) >= 0 and \
+            #             #     p.pos.move(5,-5).collidelist(waterRect) >= 0:
+            #             p.direction =  not p.direction
+            #             p.pos = p.pos.move(5,0)
 
 def mainLoop(lstWater, block):
     #pygame adapted from pygame documentation and tutorial when making 3d water
@@ -167,9 +163,8 @@ def mainLoop(lstWater, block):
     display = (600,600)
     screen = pygame.display.set_mode(display)
     sim = System()
-    if sim.particles == [] and sim.wall == []:
-        sim.particles = copy.deepcopy(lstWater)
-        sim.wall = copy.deepcopy(block)
+    sim.particles = copy.deepcopy(lstWater)
+    sim.wall = copy.deepcopy(block)
     pygame.display.update()
 
     while True:

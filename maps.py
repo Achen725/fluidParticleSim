@@ -8,30 +8,15 @@ import copy
 import math
 
 ground = []
-block = []
-particle  = []
-tileMap = createTileMap([])
+#block = []
+# particle  = []
+# collect = []
 
 waterPic = pygame.image.load("water.png")
 groundPic = pygame.image.load("ground.png")
 obstacle = pygame.image.load("block.png")
 collect = pygame.image.load("dub.png")
 bucket = pygame.image.load("bucket.png")
-# numGround = 7000
-# numCollect = 3
-# numObstacle = 3000
-#
-# def createTileMap(tileMap):
-#     for x in range(-15,300,15):
-#         for y in range(90,150,15):
-#             block.append(pygame.Rect(x,y,15,15))
-#
-#
-#             random.choice(["block","ground"])
-#             ground.append(pygame.Rect(x, y, 15,15))
-#     return tileMap
-
-
 
 class Particle(object):
     def __init__(self, image):
@@ -66,7 +51,7 @@ def createGenericWater():
 
 def getBlock(num):
     createGenericWall()
-    return block
+    return ground
 
 def getWater(num):
     createGenericWater()
