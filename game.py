@@ -16,14 +16,20 @@ class System(object):
     def __init__(self):
         self.particles = []
         self.wall = []
+        self.blockLst = []
+        self.spongeLst = []
+        self.dubLst = []
         self.display = (600,600)
         self.floorLevel = self.display[0]
         self.removable = 150
         self.paused = False
+        self.bucketLoc = None
         self.blockPic = pygame.image.load("ground.png")
         self.waterPic = pygame.image.load("water.png")
         self.bucket = pygame.image.load("bucket.png")
-
+        self.collect = pygame.image.load("dub.png")
+        self.block = pygame.image.load("block.png")
+        self.sponge = pygame.image.load("sponge.png")
 
     def getPos(self):
         lst = []
@@ -66,7 +72,7 @@ def render(screen,sim):
         waterText = text1.get_rect()
         waterText.left = 0
         waterText.centery = 20
-        # text for number of blocks allowed to remove (Game mode only)
+        # text for number of s allowed to remove (Game mode only)
         text2 = myFont.render('Block Allowed to Remove Blocks: ' + \
         str(sim.removable),True, (0, 0, 0), (255, 255, 255))
         blockText = text2.get_rect()
@@ -127,32 +133,7 @@ def update(sim,display):
                         p.direction = not p.direction
                         p.pos = p.pos.move(5,0)
 
-            # else:
-            #     if p.direction:
-            #         p.pos = p.pos.move(5,0)
-            #         if p.pos.collidelist(sim.wall) < 0 and \
-            #             p.pos.collidelist(waterRect) < 0 and \
-            #             p.pos[0] < display[0]:
-            #             pass
-            #         else:
-            #             # if p.pos.collidelist(waterRect) >= 0 and \
-            #             #     p.pos.move(-5,-5).collidelist(waterRect) >= 0 :
-            #             p.direction =  not p.direction
-            #             p.pos = p.pos.move(-5,0)
-            #
-            #     else:
-            #         p.pos = p.pos.move(-5,0)
-            #         if p.pos.collidelist(sim.wall) < 0 and \
-            #             p.pos.collidelist(waterRect) < 0 and \
-            #             p.pos[0] > -5:
-            #             pass
-            #         else:
-            #             # if p.pos.collidelist(waterRect) >= 0 and \
-            #             #     p.pos.move(5,-5).collidelist(waterRect) >= 0:
-            #             p.direction =  not p.direction
-            #             p.pos = p.pos.move(5,0)
-
-def mainLoop(lstWater, block):
+def mainLoop(lstWater, ground ,):
     #pygame adapted from pygame documentation and tutorial when making 3d water
 	#http://pyopengl.sourceforge.net
 	#https://pythonprogramming.net/opengl-rotating-cube-example-pyopengl-tutorial/
@@ -164,7 +145,7 @@ def mainLoop(lstWater, block):
     screen = pygame.display.set_mode(display)
     sim = System()
     sim.particles = copy.deepcopy(lstWater)
-    sim.wall = copy.deepcopy(block)
+    sim.wall = copy.deepcopy(ground)
     pygame.display.update()
 
     while True:
@@ -172,7 +153,7 @@ def mainLoop(lstWater, block):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sim.particles = copy.deepcopy(lstWater)
-                sim.wall = copy.deepcopy(block)
+                sim.wall = copy.deepcopy(ground)
                 launch.run()
                 quit()
             elif event.type == pygame.KEYDOWN:
@@ -180,7 +161,7 @@ def mainLoop(lstWater, block):
                     sim.paused = not sim.paused
                 if event.key == pygame.K_r:
                     sim.particles = copy.deepcopy(lstWater)
-                    sim.wall = copy.deepcopy(block)
+                    sim.wall = copy.deepcopy(ground)
         if pygame.mouse.get_pressed()[0] and sim.removable > 0:
             pos = pygame.mouse.get_pos()
             for wall in sim.wall:

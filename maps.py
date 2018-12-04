@@ -15,6 +15,7 @@ ground = []
 waterPic = pygame.image.load("water.png")
 groundPic = pygame.image.load("ground.png")
 obstacle = pygame.image.load("block.png")
+sponge = pygame.image.load("sponge.png")
 collect = pygame.image.load("dub.png")
 bucket = pygame.image.load("bucket.png")
 

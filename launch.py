@@ -4,8 +4,7 @@ import sim3d
 import game
 import maps
 import random
-import sys
-sys.dont_write_bytecode=True
+
 
 # code adapted from hack112 project and 112 website
 
