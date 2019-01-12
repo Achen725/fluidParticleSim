@@ -1,3 +1,7 @@
+<img width="800" alt="screen shot 2019-01-12 at 2 30 14 pm" src="https://user-images.githubusercontent.com/12990540/51077709-225e4200-1678-11e9-8677-2007e6f37ab2.png">
+<img width="429" alt="screen shot 2019-01-12 at 2 30 44 pm" src="https://user-images.githubusercontent.com/12990540/51077712-2c804080-1678-11e9-8157-450b175afbb5.png">
+<img width="597" alt="screen shot 2019-01-12 at 2 32 33 pm" src="https://user-images.githubusercontent.com/12990540/51077713-2ee29a80-1678-11e9-83bd-c9e3d58aa07f.png">
+
 Dynamic Fluid Particle Simulator
 
 
