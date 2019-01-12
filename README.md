@@ -1,5 +1,4 @@
-Dynamic Fluid Particle Simulator
-
+Dynamic Fluid Particle Simulator:
 
 Project Description: 
 
@@ -26,5 +25,8 @@ If in stage building mode:
 e - erases blocks
 spacebar - enters game mode
 
+<img width="800" alt="screen shot 2019-01-12 at 2 30 14 pm" src="https://user-images.githubusercontent.com/12990540/51077776-e24b8f00-1678-11e9-81ad-10ffcf0583b4.png">
+<img width="429" alt="screen shot 2019-01-12 at 2 30 44 pm" src="https://user-images.githubusercontent.com/12990540/51077782-e8da0680-1678-11e9-9c2e-cfcdaa5fcc25.png">
+<img width="597" alt="screen shot 2019-01-12 at 2 32 33 pm" src="https://user-images.githubusercontent.com/12990540/51077783-ea0b3380-1678-11e9-8e1d-c166cd94f0f5.png">
 
 
