@@ -13,18 +13,18 @@ A list of any shortcut commands that exist
 
 All instructions are listed in the program if you press h in either game or build mode. The 3d mode only has access to the arrow keys, which change the camera angle.
 In game mode:
-r Ð resets the board
-mouse Ð erases the items
+r - resets the board
+mouse - erases the items
 In build mode:
-r Ð resets the board
-f- activates force
-p Ð pauses and unpauses
-s Ð switches materials
-mouse Ð lays items down
-m Ð enters stage building mode
+r - resets the board
+f - activates force
+p - pauses and unpauses
+s - switches materials
+mouse - lays items down
+m - enters stage building mode
 If in stage building mode:
-e Ð erases blocks
-spacebar Ð enters game mode
+e - erases blocks
+spacebar - enters game mode
 
 
 
