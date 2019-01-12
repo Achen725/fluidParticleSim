@@ -9,23 +9,9 @@ import copy
 import math
 import launch
 
-
-class Obstacle(object):
-	def __init__(self):
-		self.property = "ground"
-
-class Ramp(Obstacle):
-	def __init__(self):
-		super().__init__()
-	def draw(self, dim):
-		glBegin(GL_LINES)
-		glEnd()
-		glFlush()
-
-class Cube(Obstacle):
-	def __init__(self):
-		super().__init__()
-		self.density = 10
+# Purpose: The attempt in 3d was unsuccessful due to computational calculations
+#but code and reference to what was made is included to show effort and attempt
+# at making the simulation
 
 class System(object):
 	def __init__(self):
@@ -75,18 +61,21 @@ class System(object):
 
 
 	# method for calculating movement adapted from Austin Eng documentation
+	# however changed implementation due to difficulty with computational
+	# calculation
 	# https://github.com/austinEng/WebGL-PIC-FLIP-Fluid
 	def move(self, t):
 		# take each particle in grid and assign to matrix
 		gridVelocities =  [[] for i in range(125000)]
 		for particle in self.totalParticles:
 			index = convertToIJK(particle.x, particle.y, particle.z)
-			# print(index)
 			gridVelocities[index].append(particle.velocity)
 
 		self.gridVelocities = gridVelocities
+
 		# interpolate velocities of each grid
 		# newVelocities = recalulateVelocity(gridVelocities)
+
 		# add grid velocity to each particle
 		# avg with total grid velocity
 		for particle in self.totalParticles:
@@ -105,8 +94,6 @@ class System(object):
 		for i in range(num):
 			randX = round(random.uniform(-0.2, 0.2),2)
 			randZ = round(random.uniform(-0.2, 0.2),2)
-			#randX = round(random.uniform(-0.5,0.5),2)
-			#randZ = round(random.uniform(-0.5, 0.5),2)
 			randY = round(random.uniform(0, 0.5), 2)
 			lst.append(Particle(randX, randY, randZ))
 		return lst
@@ -146,12 +133,9 @@ class Particle(object):
 		yBound =  -dim <= self.y + dy <= dim
 		zBound = -dim <= self.z + dz <= dim
 
+		# originally moved randomly but made more accurate dispersions
 		if not xBound or not yBound or not zBound:
 			velocity = self.velocity
-			# if(self.x + dx < -dim):
-			# 	self.velocity = (random.uniform(-2, 2),velocity[1], velocity[2])
-			# elif(self.x + dx > dim):
-			# 	self.velocity = (random.uniform(-2, 2),velocity[1], velocity[2])
 			if(self.y + dy < system.floor):
 				# self.y = -dim;
 				#check for collision
@@ -177,15 +161,6 @@ class Particle(object):
 					self.y= 0.5
 				elif(self.y<=-0.5):
 					self.y = system.floor
-
-				# self.velocity = (random.uniform(-5, 5),0, random.uniform(-5, 5))
-				# self.acceleration = (self.acceleration[0], min(self.acceleration[1] + random.uniform(0,t*3),0), self.acceleration[2])
-			# elif (self.y + dy > dim):
-			# 	self.velocity = (velocity[0]+random.uniform(-50, 50),random.uniform(-10, 30), velocity[2]+random.uniform(-50, 50))
-			# if(self.z + dz < -dim) :
-			# 	self.velocity = (velocity[0], velocity[1],random.uniform(-2, 2))
-			# elif(self.z + dz > dim) :
-			# 	self.velocity = (velocity[0], velocity[1],random.uniform(-2, 2))
 		else:
 			if(not self.stopDrop):
 				self.y-=(0.05*self.speed)
@@ -213,13 +188,6 @@ class Particle(object):
 					self.y=0.5
 				elif(self.y<=-0.5):
 					self.y = -0.5
-
-			# velocity = self.velocity
-			# if self.appliedForce:
-			# 	self.velocity = (velocity[0] + random.uniform(0, 10),random.uniform(0, 10), velocity[2])
-			# self.x += (velocity[0] * self.speed)
-			# self.y += (velocity[1] * self.speed)
-			# self.z += (velocity[2] * self.speed)
 
 	def updateVelocity(self, dx, dy, dz):
 		self.velocity = (dx, dy, dz)
@@ -266,10 +234,10 @@ def update(deltaTime, mySystem):
 	totalParticles = mySystem.totalParticles
 	mySystem.move(deltaTime)
 
+# camera and pygame adapted from pyopengl documentation and previous tutorial
+#http://pyopengl.sourceforge.net
+#https://pythonprogramming.net/opengl-rotating-cube-example-pyopengl-tutorial/
 def mainLoop(simulation):
-	# camera and pygame adapted from pyopengl documentation and previous tutorial
-	#http://pyopengl.sourceforge.net
-	#https://pythonprogramming.net/opengl-rotating-cube-example-pyopengl-tutorial/
 	pygame.init()
 	# window size
 	display = (1000,1000)

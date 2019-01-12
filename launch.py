@@ -4,10 +4,10 @@ import sim3d
 import game
 import maps
 import random
-
+import pygame
 
 # code adapted from hack112 project and 112 website
-
+# Purpose: UI for launch page and redirects to the different game modes
 def init(data):
     data.startText = "Water Simulation"
     data.instruct = "Choose the Mode:"
@@ -20,7 +20,9 @@ def init(data):
     rand = random.randint(0,4)
     data.lstMapsWater = maps.getWater(0)
     data.lstMapBlocks = maps.getBlock(0)
+    data.bucketLoc = pygame.Rect(260, 560,80,80)
 
+    # creates the triangles for selecting an option
     data.arrow3D = [(data.width/2 - 130, data.height/2 + 125),
                     (data.width/2 - 150, data.height/2 + 115),
                     (data.width/2 - 150, data.height/2 + 135)]
