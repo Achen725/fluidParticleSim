@@ -1,7 +1,3 @@
-![myimage-alt-tag](Screen Shot 2019-01-12 at 2.30.14 PM.png)
-
-
-
 Dynamic Fluid Particle Simulator
 
 
